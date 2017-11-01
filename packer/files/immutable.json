@@ -1,0 +1,55 @@
+{
+    "variables": {
+        "proj_id": null,
+        "source_image": null,
+        "machine_type": "g1-small"
+    },
+    "builders": [
+        {
+            "type": "googlecompute",
+            "project_id": "{{user `proj_id`}}",
+            "image_name": "reddit-base-{{timestamp}}",
+            "source_image": "{{user `source_image`}}",
+            "zone": "europe-west1-b",
+            "ssh_username": "appuser",
+            "machine_type": "{{user `machine_type`}}",
+            "image_description": "The image for DZ7 - *",
+            "disk_size": 10,
+            "disk_type": "pd-standard",
+            "network": "default",
+            "tags": [
+                "puma-server"
+            ],
+            "metadata": {
+                "startup-script": "/home/appuser/startup.sh"
+            }
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "script": "./install_ruby.sh"
+        },
+        {
+            "type": "shell",
+            "script": "./install_mongodb.sh",
+            "execute_command": "sudo {{.Path}}"
+        },
+        {
+            "type": "shell",
+            "script": "./install_app.sh",
+            "execute_command": "sudo -u appuser bash {{.Path}}"
+        },
+        {
+            "type": "file",
+            "source": "startup.sh",
+            "destination": "/home/appuser/startup.sh"
+        },
+        {
+            "inline": [
+              "chmod 777 /home/appuser/startup.sh"
+            ],
+            "type": "shell"
+        }
+    ]
+}
